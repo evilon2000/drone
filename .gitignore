@@ -1,0 +1,23 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/log
+/.idea
+/.vs
+/log/log.2023-11-15/info/0.log
+/.idea/CloudSharingPlatformSystem1.iml
+/.idea/compiler.xml
+/.vs/slnx.sqlite
+/service-api/auth-api/target
+/flowable/target
+/auth/target
+/gateway/target
+/common/target
+/service-api/auth-api/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+/service-api/auth-api/target/auth-api-0.0.1-SNAPSHOT.jar
+/log/log.2023-11-15/error/0.log
+/.idea/jarRepositories.xml
+/cloud-sdk/target
+/drone/target
+/cloud-sdk/target
