@@ -5,7 +5,7 @@
     [Parameter(Mandatory = $true)]
     [string]$RepoName,
 
-    [string]$Branch = "main",
+    [string]$Branch = "gh-pages",
 
     [switch]$UseSsh
 )
