@@ -1,0 +1,495 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AirNetwork 平台架构拓扑图</title>
+  <style>
+    :root {
+      --bg: #030814;
+      --bg-deep: #061326;
+      --border: #38a7d8;
+      --text: #bfe8ff;
+      --title: #d7f4ff;
+      --line: #45c4ff;
+      --line-active: #00ffd0;
+      --infra: #0f2235;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(24, 138, 255, 0.16) 0%, transparent 35%),
+        radial-gradient(circle at 88% 90%, rgba(0, 255, 208, 0.12) 0%, transparent 40%),
+        linear-gradient(130deg, var(--bg) 0%, var(--bg-deep) 55%, #02060f 100%);
+      color: var(--text);
+      font-family: "Bahnschrift", "DIN Alternate", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+    }
+
+    .canvas-wrap {
+      width: min(1600px, 100%);
+      border: 1px solid rgba(88, 210, 255, 0.72);
+      background:
+        linear-gradient(180deg, rgba(0, 24, 48, 0.65), rgba(2, 11, 22, 0.82)),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(130, 218, 255, 0.03),
+          rgba(130, 218, 255, 0.03) 16px,
+          rgba(0, 0, 0, 0.02) 16px,
+          rgba(0, 0, 0, 0.02) 32px
+        );
+      box-shadow:
+        0 0 0 1px rgba(75, 182, 255, 0.24),
+        0 0 28px rgba(8, 123, 197, 0.45),
+        inset 0 0 34px rgba(12, 88, 147, 0.35);
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .panel {
+      fill: rgba(16, 39, 62, 0.38);
+      stroke: rgba(69, 196, 255, 0.75);
+      stroke-width: 1.2;
+    }
+
+    .service {
+      stroke: #71d7ff;
+      stroke-width: 1.15;
+      filter: drop-shadow(0 0 7px rgba(54, 194, 255, 0.35));
+    }
+
+    .service-inner {
+      fill: rgba(6, 27, 44, 0.42);
+      stroke: rgba(123, 223, 255, 0.46);
+      stroke-width: 0.9;
+    }
+
+    .service-topbar {
+      fill: rgba(59, 212, 255, 0.16);
+      stroke: rgba(110, 223, 255, 0.4);
+      stroke-width: 0.8;
+    }
+
+    .service-tag {
+      fill: rgba(0, 255, 208, 0.14);
+      stroke: rgba(0, 255, 208, 0.6);
+      stroke-width: 0.8;
+    }
+
+    .service-tag-text {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      fill: #91ffea;
+      text-shadow: 0 0 8px rgba(0, 255, 208, 0.45);
+    }
+
+    .svc-core { fill: url(#coreGrad); }
+    .svc-gw { fill: url(#gwGrad); }
+    .svc-edge { fill: url(#edgeGrad); }
+
+    .infra {
+      fill: var(--infra);
+      stroke: rgba(137, 217, 255, 0.7);
+      stroke-width: 1.1;
+      stroke-dasharray: 7 4;
+      filter: drop-shadow(0 0 6px rgba(53, 170, 255, 0.28));
+    }
+
+    .infra-inner {
+      fill: rgba(8, 25, 39, 0.28);
+      stroke: rgba(113, 205, 255, 0.42);
+      stroke-width: 0.8;
+      stroke-dasharray: 4 3;
+    }
+
+    .title {
+      font-size: 17px;
+      font-weight: 700;
+      fill: var(--title);
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(91, 214, 255, 0.7);
+    }
+
+    .text {
+      font-size: 14px;
+      fill: #d5f3ff;
+      font-weight: 600;
+      text-shadow: 0 0 8px rgba(76, 175, 255, 0.28);
+    }
+
+    .svc-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      fill: #ecfbff;
+      text-shadow: 0 0 10px rgba(121, 225, 255, 0.65);
+    }
+
+    .svc-port {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      fill: #84e1ff;
+      text-shadow: 0 0 8px rgba(95, 202, 255, 0.55);
+    }
+
+    .svc-desc {
+      font-size: 12px;
+      font-weight: 600;
+      fill: #b8ebff;
+      text-shadow: 0 0 8px rgba(74, 174, 255, 0.32);
+    }
+
+    .svc-micro {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      fill: #63cbff;
+    }
+
+    .ext-title {
+      font-size: 13px;
+      font-weight: 700;
+      fill: #d7f5ff;
+      text-shadow: 0 0 8px rgba(97, 205, 255, 0.5);
+    }
+
+    .infra-title {
+      font-size: 12px;
+      font-weight: 700;
+      fill: #dff6ff;
+      text-shadow: 0 0 8px rgba(102, 206, 255, 0.35);
+    }
+
+    .infra-desc {
+      font-size: 10px;
+      font-weight: 600;
+      fill: #96dcff;
+    }
+
+    .small {
+      font-size: 12px;
+      fill: #98dbff;
+      font-weight: 600;
+      text-shadow: 0 0 8px rgba(58, 145, 214, 0.25);
+    }
+
+    .line {
+      stroke: var(--line);
+      stroke-width: 1.45;
+      fill: none;
+      marker-end: url(#arrow);
+      opacity: 0.95;
+      filter: drop-shadow(0 0 4px rgba(74, 198, 255, 0.45));
+    }
+
+    .flow {
+      stroke: var(--line-active);
+      stroke-dasharray: 8 6;
+      animation: stream 11s linear infinite;
+      filter: drop-shadow(0 0 6px rgba(0, 255, 208, 0.65));
+    }
+
+    .line-soft {
+      stroke: var(--line);
+      stroke-width: 1.2;
+      fill: none;
+      opacity: 0.75;
+      filter: drop-shadow(0 0 3px rgba(58, 184, 255, 0.4));
+    }
+
+    .chip {
+      fill: #153247;
+      stroke: #6db7e3;
+      stroke-width: 1;
+    }
+
+    .metal-label {
+      font-size: 13px;
+      font-weight: 700;
+      fill: #8ee6ff;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(60, 212, 255, 0.8);
+    }
+
+    .hud-corner {
+      stroke: rgba(106, 224, 255, 0.85);
+      stroke-width: 2;
+      fill: none;
+      filter: drop-shadow(0 0 6px rgba(74, 205, 255, 0.7));
+    }
+
+    .scan-sweep {
+      opacity: 0.28;
+    }
+
+    .svc-core,
+    .svc-gw {
+      animation: breathe 7s ease-in-out infinite;
+    }
+
+    @keyframes stream {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -240; }
+    }
+
+    @keyframes breathe {
+      0%, 100% { filter: drop-shadow(0 0 7px rgba(41, 180, 255, 0.28)); }
+      50% { filter: drop-shadow(0 0 14px rgba(41, 180, 255, 0.55)); }
+    }
+
+    @media (max-width: 900px) {
+      .page { padding: 4px; }
+      .canvas-wrap { border-width: 1px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="canvas-wrap">
+      <svg viewBox="0 0 1600 820" role="img" aria-label="AirNetwork 平台架构拓扑图">
+        <defs>
+          <linearGradient id="sceneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#071529" />
+            <stop offset="100%" stop-color="#020a15" />
+          </linearGradient>
+          <pattern id="sceneGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+            <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#2a5f84" stroke-width="0.5" opacity="0.38" />
+          </pattern>
+          <pattern id="sceneStars" width="160" height="160" patternUnits="userSpaceOnUse">
+            <circle cx="14" cy="20" r="0.9" fill="#8de0ff" opacity="0.55" />
+            <circle cx="56" cy="66" r="0.8" fill="#6fd2ff" opacity="0.35" />
+            <circle cx="96" cy="30" r="0.7" fill="#70ffd8" opacity="0.35" />
+            <circle cx="142" cy="108" r="0.9" fill="#8de0ff" opacity="0.3" />
+            <circle cx="38" cy="126" r="0.7" fill="#79d5ff" opacity="0.26" />
+            <circle cx="126" cy="150" r="0.8" fill="#7ef0ff" opacity="0.3" />
+          </pattern>
+          <pattern id="scanLines" width="6" height="6" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="6" height="3" fill="rgba(117,205,255,0.06)" />
+          </pattern>
+          <linearGradient id="scanSweepGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(0,0,0,0)" />
+            <stop offset="45%" stop-color="rgba(76, 214, 255, 0)" />
+            <stop offset="50%" stop-color="rgba(76, 214, 255, 0.34)" />
+            <stop offset="55%" stop-color="rgba(76, 214, 255, 0)" />
+            <stop offset="100%" stop-color="rgba(0,0,0,0)" />
+          </linearGradient>
+          <linearGradient id="coreGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#17466a" />
+            <stop offset="100%" stop-color="#0f2f4c" />
+          </linearGradient>
+          <linearGradient id="gwGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1a6d83" />
+            <stop offset="100%" stop-color="#0f465c" />
+          </linearGradient>
+          <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#1d4f70" />
+            <stop offset="100%" stop-color="#12364f" />
+          </linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#7fd9ff" />
+          </marker>
+        </defs>
+
+        <rect x="0" y="0" width="1600" height="820" fill="url(#sceneGrad)" />
+        <rect x="0" y="0" width="1600" height="820" fill="url(#sceneStars)" opacity="0.38" />
+        <rect x="0" y="0" width="1600" height="820" fill="url(#sceneGrid)" opacity="0.5" />
+        <rect x="0" y="0" width="1600" height="820" fill="url(#scanLines)" opacity="0.45" />
+        <rect class="scan-sweep" x="0" y="-820" width="1600" height="820" fill="url(#scanSweepGrad)">
+          <animate attributeName="y" from="-820" to="820" dur="8s" repeatCount="indefinite" />
+        </rect>
+        <text class="metal-label" x="58" y="52">AIRNETWORK PLATFORM TOPOLOGY</text>
+        <path class="hud-corner" d="M 18 18 L 62 18 M 18 18 L 18 62" />
+        <path class="hud-corner" d="M 1582 18 L 1538 18 M 1582 18 L 1582 62" />
+        <path class="hud-corner" d="M 18 802 L 62 802 M 18 802 L 18 758" />
+        <path class="hud-corner" d="M 1582 802 L 1538 802 M 1582 802 L 1582 758" />
+
+        <!-- Panels -->
+        <rect class="panel" x="36" y="280" width="1100" height="240" />
+        <rect class="panel" x="10" y="560" width="1140" height="110" />
+        <rect class="panel" x="1185" y="30" width="390" height="760" />
+
+        <!-- Panel titles -->
+        <text class="title" x="580" y="292" text-anchor="middle">核心微服务</text>
+        <text class="title" x="620" y="572" text-anchor="middle">基础设施 &amp; 中间件</text>
+        <text class="title" x="1378" y="44" text-anchor="middle">外部访问方</text>
+
+        <!-- External clients -->
+        <rect class="service svc-edge" x="1210" y="48" rx="8" ry="8" width="86" height="38" />
+        <rect class="service-inner" x="1213" y="51" rx="6" ry="6" width="80" height="32" />
+        <rect class="service-topbar" x="1213" y="51" rx="6" ry="6" width="80" height="10" />
+        <text class="svc-micro" x="1253" y="59" text-anchor="middle">WEB</text>
+        <text class="ext-title" x="1253" y="75" text-anchor="middle">Web 前端</text>
+
+        <rect class="service svc-edge" x="1335" y="48" rx="8" ry="8" width="86" height="38" />
+        <rect class="service-inner" x="1338" y="51" rx="6" ry="6" width="80" height="32" />
+        <rect class="service-topbar" x="1338" y="51" rx="6" ry="6" width="80" height="10" />
+        <text class="svc-micro" x="1378" y="59" text-anchor="middle">APP</text>
+        <text class="ext-title" x="1378" y="75" text-anchor="middle">移动 APP</text>
+
+        <rect class="service svc-edge" x="1455" y="48" rx="8" ry="8" width="96" height="38" />
+        <rect class="service-inner" x="1458" y="51" rx="6" ry="6" width="90" height="32" />
+        <rect class="service-topbar" x="1458" y="51" rx="6" ry="6" width="90" height="10" />
+        <text class="svc-micro" x="1503" y="59" text-anchor="middle">API</text>
+        <text class="ext-title" x="1503" y="75" text-anchor="middle">第三方系统</text>
+
+        <!-- Gateway -->
+        <rect class="service svc-gw" x="1288" y="134" rx="8" ry="8" width="176" height="86" />
+        <rect class="service-inner" x="1293" y="139" rx="6" ry="6" width="166" height="76" />
+        <rect class="service-topbar" x="1293" y="139" rx="6" ry="6" width="166" height="14" />
+        <rect class="service-tag" x="1298" y="142" rx="3" ry="3" width="44" height="9" />
+        <text class="service-tag-text" x="1320" y="150" text-anchor="middle">ENTRY</text>
+        <text class="svc-title" x="1376" y="171" text-anchor="middle">Gateway</text>
+        <text class="svc-port" x="1376" y="186" text-anchor="middle">PORT : 8901</text>
+        <text class="svc-desc" x="1376" y="203" text-anchor="middle">Spring Cloud Gateway</text>
+        <text class="svc-desc" x="1376" y="217" text-anchor="middle">Sa-Token / Route / Auth</text>
+
+        <!-- Core services -->
+        <rect class="service svc-core" x="340" y="298" rx="8" ry="8" width="144" height="68" />
+        <rect class="service-inner" x="344" y="302" rx="6" ry="6" width="136" height="60" />
+        <rect class="service-topbar" x="344" y="302" rx="6" ry="6" width="136" height="12" />
+        <rect class="service-tag" x="348" y="304" rx="3" ry="3" width="36" height="8" />
+        <text class="service-tag-text" x="366" y="311" text-anchor="middle">CORE</text>
+        <text class="svc-title" x="412" y="331" text-anchor="middle">auth</text>
+        <text class="svc-desc" x="412" y="347" text-anchor="middle">用户/组织/角色/字典</text>
+        <text class="svc-desc" x="412" y="360" text-anchor="middle">Sa-Token 认证</text>
+
+        <rect class="service svc-core" x="354" y="426" rx="8" ry="8" width="118" height="68" />
+        <rect class="service-inner" x="358" y="430" rx="6" ry="6" width="110" height="60" />
+        <rect class="service-topbar" x="358" y="430" rx="6" ry="6" width="110" height="12" />
+        <rect class="service-tag" x="362" y="432" rx="3" ry="3" width="34" height="8" />
+        <text class="service-tag-text" x="379" y="439" text-anchor="middle">BPM</text>
+        <text class="svc-title" x="413" y="458" text-anchor="middle">flowable</text>
+        <text class="svc-desc" x="413" y="474" text-anchor="middle">流程引擎 + 审批</text>
+        <text class="svc-desc" x="413" y="487" text-anchor="middle">Workflow</text>
+
+        <rect class="service svc-core" x="794" y="416" rx="8" ry="8" width="176" height="86" />
+        <rect class="service-inner" x="799" y="421" rx="6" ry="6" width="166" height="76" />
+        <rect class="service-topbar" x="799" y="421" rx="6" ry="6" width="166" height="14" />
+        <rect class="service-tag" x="804" y="424" rx="3" ry="3" width="46" height="9" />
+        <text class="service-tag-text" x="827" y="432" text-anchor="middle">EDGE</text>
+        <text class="svc-title" x="882" y="451" text-anchor="middle">drone</text>
+        <text class="svc-desc" x="882" y="468" text-anchor="middle">无人机/媒体/地图/航线/控制</text>
+        <text class="svc-desc" x="882" y="483" text-anchor="middle">MQTT / WebSocket / AI回调</text>
+        <text class="svc-micro" x="882" y="495" text-anchor="middle">REAL-TIME CONTROL PLANE</text>
+
+        <!-- Infra -->
+        <rect class="infra" x="34" y="588" rx="20" ry="20" width="140" height="50" />
+        <rect class="infra-inner" x="38" y="592" rx="16" ry="16" width="132" height="42" />
+        <text class="infra-title" x="104" y="611" text-anchor="middle">Nacos</text>
+        <text class="infra-desc" x="104" y="626" text-anchor="middle">注册中心 + 配置中心</text>
+
+        <rect class="infra" x="206" y="590" rx="20" ry="20" width="72" height="48" />
+        <rect class="infra-inner" x="210" y="594" rx="16" ry="16" width="64" height="40" />
+        <text class="infra-title" x="242" y="611" text-anchor="middle">MySQL</text>
+        <text class="infra-desc" x="242" y="625" text-anchor="middle">auth</text>
+
+        <rect class="infra" x="308" y="590" rx="20" ry="20" width="96" height="48" />
+        <rect class="infra-inner" x="312" y="594" rx="16" ry="16" width="88" height="40" />
+        <text class="infra-title" x="356" y="611" text-anchor="middle">MySQL</text>
+        <text class="infra-desc" x="356" y="625" text-anchor="middle">flowable</text>
+
+        <rect class="infra" x="438" y="580" rx="24" ry="24" width="124" height="68" />
+        <rect class="infra-inner" x="442" y="584" rx="20" ry="20" width="116" height="60" />
+        <text class="infra-title" x="500" y="611" text-anchor="middle">PostgreSQL + PostGIS</text>
+        <text class="infra-desc" x="500" y="628" text-anchor="middle">flowable GIS</text>
+
+        <rect class="infra" x="578" y="590" rx="20" ry="20" width="92" height="48" />
+        <rect class="infra-inner" x="582" y="594" rx="16" ry="16" width="84" height="40" />
+        <text class="infra-title" x="624" y="611" text-anchor="middle">MySQL</text>
+        <text class="infra-desc" x="624" y="625" text-anchor="middle">drone</text>
+
+        <rect class="infra" x="698" y="588" rx="20" ry="20" width="92" height="50" />
+        <rect class="infra-inner" x="702" y="592" rx="16" ry="16" width="84" height="42" />
+        <text class="infra-title" x="744" y="611" text-anchor="middle">Redis</text>
+        <text class="infra-desc" x="744" y="626" text-anchor="middle">多服务共享</text>
+
+        <rect class="infra" x="808" y="580" rx="24" ry="24" width="104" height="68" />
+        <rect class="infra-inner" x="812" y="584" rx="20" ry="20" width="96" height="60" />
+        <text class="infra-title" x="860" y="611" text-anchor="middle">阿里云 OSS</text>
+        <text class="infra-desc" x="860" y="628" text-anchor="middle">媒体文件存储</text>
+
+        <rect class="infra" x="926" y="580" rx="24" ry="24" width="104" height="68" />
+        <rect class="infra-inner" x="930" y="584" rx="20" ry="20" width="96" height="60" />
+        <text class="infra-title" x="978" y="611" text-anchor="middle">MQTT Broker</text>
+        <text class="infra-desc" x="978" y="628" text-anchor="middle">设备双向通信</text>
+
+        <rect class="infra" x="1044" y="580" rx="24" ry="24" width="104" height="68" />
+        <rect class="infra-inner" x="1048" y="584" rx="20" ry="20" width="96" height="60" />
+        <text class="infra-title" x="1096" y="611" text-anchor="middle">AI 服务</text>
+        <text class="infra-desc" x="1096" y="628" text-anchor="middle">目标检测/分割/ODM等</text>
+
+        <!-- Device side -->
+        <rect class="service svc-edge" x="1315" y="596" rx="8" ry="8" width="120" height="36" />
+        <rect class="service-inner" x="1319" y="600" rx="6" ry="6" width="112" height="28" />
+        <text class="ext-title" x="1375" y="619" text-anchor="middle">无人机/手持设备</text>
+
+        <rect class="chip" x="1360" y="720" rx="8" ry="8" width="50" height="36" />
+        <text class="infra-title" x="1385" y="742" text-anchor="middle">D</text>
+
+        <!-- External to gateway links -->
+        <line class="line flow" x1="1253" y1="86" x2="1298" y2="134" />
+        <line class="line flow" x1="1378" y1="86" x2="1378" y2="134" />
+        <line class="line flow" x1="1503" y1="86" x2="1460" y2="134" />
+
+        <text class="small" x="1242" y="114" text-anchor="middle">HTTPS</text>
+        <text class="small" x="1378" y="114" text-anchor="middle">HTTPS</text>
+        <text class="small" x="1490" y="114" text-anchor="middle">API</text>
+
+        <!-- Gateway to services -->
+        <path class="line flow" d="M 1288 168 C 1150 178, 590 305, 484 328" />
+        <text class="small" x="1210" y="258">路由 + 统一鉴权</text>
+
+        <path class="line flow" d="M 1376 220 C 1376 300, 1370 356, 470 458" />
+        <text class="small" x="1330" y="334">路由 + 统一鉴权</text>
+
+        <path class="line flow" d="M 1462 218 C 1540 250, 1540 348, 970 448" />
+        <text class="small" x="1478" y="334">路由 + 统一鉴权</text>
+
+        <!-- Core internal links -->
+        <path class="line flow" d="M 413 426 L 413 366" />
+        <text class="small" x="450" y="394">Feign auth-api</text>
+
+        <path class="line flow" d="M 794 438 C 710 410, 610 350, 484 330" />
+        <text class="small" x="845" y="395">Feign auth-api</text>
+
+        <path class="line-soft" d="M 472 458 C 550 470, 690 505, 794 450" />
+
+        <!-- Service to infra -->
+        <path class="line" d="M 355 332 C 200 360, 95 408, 95 588" />
+        <path class="line" d="M 390 426 C 300 458, 242 510, 242 590" />
+        <path class="line" d="M 412 494 C 380 532, 356 555, 356 590" />
+        <path class="line" d="M 430 494 C 470 532, 492 552, 492 580" />
+        <path class="line" d="M 460 350 C 640 380, 740 460, 744 588" />
+
+        <path class="line" d="M 860 500 C 860 542, 860 558, 860 580" />
+        <path class="line" d="M 900 500 C 960 530, 978 548, 978 580" />
+        <path class="line" d="M 940 500 C 1050 530, 1096 548, 1096 580" />
+        <path class="line" d="M 820 500 C 760 530, 624 550, 624 590" />
+        <path class="line" d="M 800 446 C 560 470, 180 505, 104 588" />
+
+        <!-- Drone to edge device -->
+        <path class="line flow" d="M 970 470 C 1130 520, 1270 540, 1375 596" />
+        <text class="small" x="1330" y="540">状态/指令/遥测</text>
+
+        <path class="line flow" d="M 1375 632 L 1385 720" />
+        <text class="small" x="1388" y="698" text-anchor="middle">MQTT + WebSocket</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
